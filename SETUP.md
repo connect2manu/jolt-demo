@@ -21,8 +21,12 @@ The project requires Java 11. You can install it using Homebrew:
 # Install Java 11
 brew install openjdk@11
 
-# Link the Java installation
+# Link the Java installation (the path depends on your Mac architecture)
+# For Apple Silicon Macs (M1, M2, etc.):
 sudo ln -sfn /opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+
+# For Intel Macs:
+# sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
 ```
 
 Verify the installation:
@@ -201,7 +205,12 @@ If port 8080 is already in use:
    lsof -i :8080
    ```
 
-2. Kill the process:
+2. Kill the process gracefully:
+   ```bash
+   kill <PID>
+   ```
+
+3. If the process doesn't stop, force kill it:
    ```bash
    kill -9 <PID>
    ```
