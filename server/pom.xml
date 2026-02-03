@@ -37,13 +37,8 @@
 
     <dependencies>
 
-
-        <dependency>
-            <groupId>com.example.appengine.demo</groupId>
-            <artifactId>simple-jetty-main</artifactId>
-            <version>1</version>
-            <scope>provided</scope>
-        </dependency>
+        <!-- Removed simple-jetty-main dependency as it's only needed for App Engine runtime -->
+        <!-- For local development, use any servlet container or follow setup instructions in SETUP.md -->
 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -197,6 +192,23 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Jetty plugin for easy local development -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.4.48.v20220622</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/</contextPath>
+                    </webApp>
+                    <httpConnector>
+                        <port>8080</port>
+                    </httpConnector>
+                    <stopKey>STOP</stopKey>
+                    <stopPort>9999</stopPort>
+                </configuration>
             </plugin>
         </plugins>
     </build>

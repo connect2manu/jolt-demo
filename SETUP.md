@@ -90,56 +90,23 @@ mvn clean package
 
 The build will create a WAR file at `server/target/server-0.0.1-SNAPSHOT.war`.
 
-**Note:** You may see a warning about a missing `simple-jetty-main` dependency. This is expected and doesn't prevent building the WAR file, as this dependency is only needed for runtime on Google App Engine.
-
 ### 3. Run the Application Locally
 
-There are two main options for running the application locally:
-
-#### Option A: Using Maven AppEngine Plugin (Legacy)
-
-This option uses the older AppEngine development server:
+The simplest way to run the application locally is using the embedded Jetty server via Maven:
 
 ```bash
 cd server
-mvn appengine:devserver
+mvn jetty:run
 ```
 
-Then open your browser to:
-```
-http://localhost:8080
-```
-
-#### Option B: Using an External Jetty Server (Recommended for Java 11)
-
-For Java 11 compatibility, you can use the Google Cloud App Engine Java 11 migration approach. This requires downloading and setting up an external Jetty runner.
-
-1. Clone the Google samples repository (do this in a separate directory, not inside jolt-demo):
-
-```bash
-cd ~/code  # or wherever you keep your projects
-git clone https://github.com/GoogleCloudPlatform/java-docs-samples.git
-cd java-docs-samples/appengine-java11/appengine-simple-jetty-main
-mvn clean install
-```
-
-2. Run the Jolt Demo WAR using the Jetty runner:
-
-```bash
-cd ~/code/java-docs-samples/appengine-java11/appengine-simple-jetty-main
-mvn exec:java -Dexec.args="<path-to-jolt-demo>/server/target/server-0.0.1-SNAPSHOT.war"
-```
-
-Replace `<path-to-jolt-demo>` with the actual path to your jolt-demo directory, for example:
-
-```bash
-mvn exec:java -Dexec.args="$HOME/code/jolt-demo/server/target/server-0.0.1-SNAPSHOT.war"
-```
-
-Then open your browser to:
+The server will start and you can access the application at:
 ```
 http://localhost:8080
 ```
+
+To stop the server, press `Ctrl+C` in the terminal.
+
+**Alternative:** You can also use any other servlet container (Tomcat, etc.) by deploying the WAR file generated in `server/target/server-0.0.1-SNAPSHOT.war`.
 
 ## Testing the Application
 

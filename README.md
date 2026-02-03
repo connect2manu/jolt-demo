@@ -21,9 +21,9 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 11)
 # Build
 mvn clean package
 
-# Run (legacy method)
+# Run
 cd server
-mvn appengine:devserver
+mvn jetty:run
 ```
 
 Then open http://localhost:8080 in your browser.
