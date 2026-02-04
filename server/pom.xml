@@ -17,7 +17,7 @@
     <properties>
         <!-- Version of the Demo Site wrt Deployments is now handled in the AppEngine UI / deploy job. -->
 
-        <jolt.version>0.1.1</jolt.version>
+        <jolt.version>0.1.8</jolt.version>
 
         <!-- uncomment if you wish to set your project here project- gcloud is used otherwise -->
 <!--        <app.deploy.project>jolt-demo</app.deploy.project>-->
