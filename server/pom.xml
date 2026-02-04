@@ -37,8 +37,14 @@
 
     <dependencies>
 
-        <!-- Removed simple-jetty-main dependency as it's only needed for App Engine runtime -->
+        <!-- simple-jetty-main dependency is only needed for App Engine runtime -->
         <!-- For local development, use any servlet container or follow setup instructions in SETUP.md -->
+        <dependency>
+            <groupId>com.example.appengine.demo</groupId>
+            <artifactId>simple-jetty-main</artifactId>
+            <version>1</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
