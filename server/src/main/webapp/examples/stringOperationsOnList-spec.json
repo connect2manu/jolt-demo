@@ -1,0 +1,66 @@
+// Demonstrates list filter, string operations sequence and removing null elements.
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "genreArray": {
+        "*": {
+          // transpose all elements in array into map of array.
+          // key -> 'id'
+          // value -> value at each index
+          "@": "genres[&1].id"
+        }
+      }
+    }
+  },
+  // Apply string manipulation functions to get normalized value
+  // All intermediate transform performed under genres.tmp map.
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "genres": {
+        "*": {
+          "tmp": {
+            "prefix": "=substring(@(2,id),0,5)", //pick prefix 'genre'
+            "parts": "=split('genre_',@(2,id))", // split by 'genre_'
+            "rawName": "=lastElement(@(1,parts))",
+            "nameTokens": "=split('_',@(1,rawName))",
+            "value": "=join(' ',@(1,nameTokens))"
+          }
+        }
+      }
+    }
+  },
+  // Generate final genres map with id & (normalized) name elements.
+  // Demonstrates sub-genres filter
+  {
+    "operation": "shift",
+    "spec": {
+      "genres": {
+        "*": {
+          "tmp": {
+            "prefix": {
+              // put all genres key/value under one array
+              "genre": {
+                "@(3,id)": "genres.[&4].id",
+                "@(2,value)": "genres[&4].name"
+              },
+              // filter/remove subgenres OR,
+              // put subgenres in different array
+              "sub*": {
+                "@(3,id)": "ignore.subgenres[].id"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  // Remove null element created for indexes where subgenre is moved.
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "genres": "=recursivelySquashNulls"
+    }
+  }
+]
