@@ -1,10 +1,15 @@
-# Local Setup Guide for macOS
+# Jolt Playground - Setup Guide (Local Env)
 
-This guide provides step-by-step instructions to set up and run the Jolt Demo application on your local Mac.
+Step-by-step instructions to set up and run the Jolt Playground application on your local Mac.
 
 ## Overview
 
-Jolt Demo is a web application that provides an interactive interface for testing and experimenting with [Jolt](https://github.com/bazaarvoice/jolt) JSON transformations. The application is built with Java and Maven, and is designed to run on Google App Engine.
+**Jolt Playground** is a web application for testing and experimenting with [Jolt](https://github.com/bazaarvoice/jolt) JSON transformations. It offers two deployment models:
+
+- **Standalone JAR** - Single executable file for easy distribution (recommended for teams)
+- **WAR with Hot-Reload** - Traditional development workflow with automatic code reload
+
+Choose your path below based on your needs.
 
 ## Prerequisites
 
@@ -80,37 +85,86 @@ git clone https://github.com/connect2manu/jolt-demo.git
 cd jolt-demo
 ```
 
-### 2. Build the Project
+### 2. Set Java Home
 
-Build the WAR file for the server:
+Ensure you're using Java 11:
 
 ```bash
-# Ensure you're using Java 11
 export JAVA_HOME=$(/usr/libexec/java_home -v 11)
-
-# Clean and build
-mvn clean package
 ```
 
-The build will create a WAR file at `server/target/server-0.0.1-SNAPSHOT.war`.
+### 3. Choose Your Setup Path
 
-### 3. Run the Application Locally
-
-The simplest way to run the application locally is using the embedded Jetty server via Maven:
+#### Path A: Standalone JAR (Recommended for Distribution)
 
 ```bash
-cd server
+# Build standalone executable JAR
+cd jolt-demo/server
+mvn clean package
+
+# Run the JAR
+java -jar target/jolt-playground.jar
+```
+
+Access the application at: **http://localhost:8080**
+
+**Options:**
+```bash
+# Custom port
+java -jar target/jolt-playground.jar --port 9090
+
+# Info-level logging
+java -jar target/jolt-playground.jar --info
+
+# Error-only logging
+java -jar target/jolt-playground.jar --error
+
+# Full debug logging
+java -jar target/jolt-playground.jar --debug
+
+# View all options
+java -jar target/jolt-playground.jar --help
+```
+
+**Advantages:**
+- Single 4.8MB executable file
+- No Maven/build tools needed to run
+- Perfect for sharing with team
+- Configurable logging and port via CLI
+
+#### Path B: WAR with Hot-Reload (Best for Development)
+
+```bash
+# Build WAR with Maven Jetty plugin
+cd jolt-demo/server
+mvn clean package -Pwar
+
+# Run with auto-reload
 mvn jetty:run
 ```
 
-The server will start and you can access the application at:
-```
-http://localhost:8080
+Access the application at: **http://localhost:8080**
+
+Edit source files → changes auto-reload (no rebuild needed!)
+Press `Ctrl+C` to stop.
+
+**Advantages:**
+- Automatic reload on code changes
+- Fast feedback loop during development
+- Traditional Maven workflow
+- Can deploy WAR to servlet containers (Tomcat, etc.)
+
+#### Path C: Build Both (Complete Workflow)
+
+```bash
+# Build both JAR and WAR
+cd jolt-demo/server
+mvn clean package -Pjar -Pwar
 ```
 
-To stop the server, press `Ctrl+C` in the terminal.
-
-**Alternative:** You can also use any other servlet container (Tomcat, etc.) by deploying the WAR file generated in `server/target/server-0.0.1-SNAPSHOT.war`.
+This creates:
+- `target/jolt-playground.jar` (for distribution)
+- `target/server-0.0.1-SNAPSHOT-web.war` (for servlet containers)
 
 ## Testing the Application
 
@@ -129,14 +183,38 @@ You should see the transformed JSON output.
 
 ## Development Workflow
 
-### Making Changes
+### Making Changes (Using WAR Profile)
 
-1. Make your code changes in `server/src/main/java` or `server/src/main/webapp`
-2. Rebuild the project:
+For fast iteration during development:
+
+1. Build WAR profile once:
    ```bash
-   mvn clean package
+   mvn clean package -Pwar
    ```
-3. Restart the server to see your changes
+
+2. Start the server:
+   ```bash
+   mvn jetty:run
+   ```
+
+3. Edit your code in `server/src/main/java` or `server/src/main/webapp`
+
+4. **Just refresh your browser** - Jetty automatically detects changes!
+
+5. Stop with `Ctrl+C`
+
+### Testing Distribution (Using JAR Profile)
+
+To test how the JAR will work for team distribution:
+
+```bash
+# Build JAR
+mvn clean package
+
+# Run JAR with various logging levels
+java -jar target/jolt-playground.jar --info
+java -jar target/jolt-playground.jar --port 9090 --debug
+```
 
 ### Running Tests
 
@@ -225,6 +303,30 @@ mvn clean install -U
 
 The `-U` flag forces Maven to update snapshots and releases.
 
+## Deployment Options Comparison
+
+| Feature | JAR (Standalone) | WAR (Development) |
+|---------|-----------------|-------------------|
+| **Build Command** | `mvn clean package` | `mvn clean package -Pwar` |
+| **Run Command** | `java -jar jolt-playground.jar` | `mvn jetty:run` |
+| **Distribution** | Single 4.8MB file | Requires Maven/Jetty |
+| **Hot Reload** | No (need rebuild) | Yes (automatic) |
+| **Logging Control** | CLI flags (--info, --debug) | Via SLF4J config |
+| **Port Config** | `--port` flag | Default 8080 |
+| **Best For** | Teams, production, sharing | Development, testing |
+| **Deploy To** | Any machine with Java 11 | Servlet containers |
+
+## Detailed Server Documentation
+
+For comprehensive information about:
+- **Build profiles** (JAR vs WAR)
+- **Logging modes** (error, warn, info, debug)
+- **CLI options** (port, logging configuration)
+- **Error tracking** with source line numbers
+- **Distribution** to team members
+
+See: **[server/README.md](server/README.md)**
+
 ## Additional Resources
 
 - [Jolt GitHub Repository](https://github.com/bazaarvoice/jolt)
@@ -240,6 +342,7 @@ Once you have the application running:
 2. Experiment with different Jolt transformations using the web interface
 3. Check out the examples in `server/src/main/webapp/examples/`
 4. Read the [Jolt documentation](https://github.com/bazaarvoice/jolt) to learn more about transformations
+5. Explore logging options: try `java -jar target/jolt-playground.jar --info` to see detailed transform messages
 
 ## Contributing
 
@@ -247,7 +350,7 @@ If you'd like to contribute to this project:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
+3. Make your changes using the WAR profile for hot-reload development
 4. Submit a pull request
 
 ## Support
@@ -256,4 +359,5 @@ For issues and questions:
 
 - Check the [Jolt documentation](https://github.com/bazaarvoice/jolt)
 - Review the examples in the `server/src/main/webapp/examples/` directory
+- See [server/README.md](server/README.md) for logging and deployment questions
 - Open an issue in the GitHub repository

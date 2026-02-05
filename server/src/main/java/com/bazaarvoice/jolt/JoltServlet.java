@@ -1,6 +1,8 @@
 package com.bazaarvoice.jolt;
 
 import com.bazaarvoice.jolt.exception.JoltException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -16,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
  * Just do the simplest, stupidest, BOG standard Servlet.
  */
 public class JoltServlet extends HttpServlet {
+
+    private static final Logger logger = LoggerFactory.getLogger(JoltServlet.class);
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,7 +45,9 @@ public class JoltServlet extends HttpServlet {
             sort = Boolean.valueOf( req.getParameter( "sort" ) );
         }
         catch ( Exception e ) {
-            resp.getWriter().println( "Could not url-decode the inputs.\n");
+            String errorMsg = "Could not url-decode the inputs.";
+            logger.error(errorMsg, e);
+            resp.getWriter().println( errorMsg + "\n");
             return;
         }
 
@@ -51,7 +57,9 @@ public class JoltServlet extends HttpServlet {
             input = JsonUtils.jsonToObject( inputString );
         }
         catch ( Exception e ) {
-            resp.getWriter().println( "Could not parse the 'input' JSON.\n" );
+            String errorMsg = "Could not parse the 'input' JSON.";
+            logger.error(errorMsg + " Input: " + inputString, e);
+            resp.getWriter().println( errorMsg + "\n" );
             return;
         }
 
@@ -59,10 +67,13 @@ public class JoltServlet extends HttpServlet {
             spec = JsonUtils.jsonToObject( specString );
         }
         catch ( Exception e ) {
-            resp.getWriter().println( "Could not parse the 'spec' JSON.\n" );
+            String errorMsg = "Could not parse the 'spec' JSON.";
+            logger.error(errorMsg + " Spec: " + specString, e);
+            resp.getWriter().println( errorMsg + "\n" );
             return;
         }
 
+        logger.debug("Starting Jolt transform. Input: {}, Spec: {}", inputString, specString);
         String result = doTransform( input, spec, sort );
         resp.getWriter().println( result );
     }
@@ -71,15 +82,20 @@ public class JoltServlet extends HttpServlet {
     private String doTransform( Object input, Object spec, boolean doSort ) throws IOException {
 
         try {
+            logger.debug("Creating Chainr from spec");
             Chainr chainr = Chainr.fromSpec( spec );
 
+            logger.debug("Executing transform");
             Object output = chainr.transform( input );
 
             if ( doSort ) {
+                logger.debug("Sorting output");
                 output = Sortr.sortJson( output );
             }
 
-            return JsonUtils.toPrettyJsonString( output );
+            String result = JsonUtils.toPrettyJsonString( output );
+            logger.debug("Transform successful. Output: {}", result);
+            return result;
         }
         catch ( Exception e ) {
 
@@ -88,16 +104,22 @@ public class JoltServlet extends HttpServlet {
 
             // Walk up the stackTrace printing the message for any JoltExceptions.
             Throwable exception = e;
+            int exceptionCount = 0;
             do {
                 if ( exception instanceof JoltException ) {
-                    sb.append( exception.getMessage() );
+                    String msg = exception.getMessage();
+                    sb.append( msg );
                     sb.append( "\n\n");
+                    logger.error("JoltException [" + (++exceptionCount) + "]: " + msg + " at " + exception.getStackTrace()[0], exception);
+                } else {
+                    logger.error("Exception during transform: " + exception.getClass().getName(), exception);
                 }
 
                 exception = exception.getCause();
             }
             while( exception != null );
 
+            logger.error("Transform failed", e);
             return sb.toString();
         }
     }
